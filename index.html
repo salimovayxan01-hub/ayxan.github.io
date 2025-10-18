@@ -454,3 +454,157 @@ pieces.forEach(p=>{
 </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ayxanın Şahmat Saytı</title>
+<style>
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #1e1e1e;
+  color: white;
+  margin: 0;
+  padding: 0;
+}
+header {
+  background: #2a2a2a;
+  padding: 20px;
+  font-size: 28px;
+  font-weight: bold;
+  text-align: center;
+}
+nav {
+  background: #333;
+  display: flex;
+  justify-content: center;
+}
+nav a {
+  color: white;
+  text-decoration: none;
+  padding: 15px 25px;
+  display: block;
+  transition: 0.3s;
+}
+nav a:hover {
+  background: #ff5722;
+  transform: scale(1.1);
+}
+section {
+  padding: 40px;
+  max-width: 900px;
+  margin: auto;
+  text-align: center;
+}
+.chessboard {
+  display: grid;
+  grid-template-columns: repeat(8, 60px);
+  grid-template-rows: repeat(8, 60px);
+  margin: 20px auto;
+  border: 4px solid white;
+  position: relative;
+}
+.chessboard div {
+  width: 60px;
+  height: 60px;
+}
+.white { background: #f0d9b5; }
+.black { background: #b58863; }
+.piece {
+  position: absolute;
+  font-size: 50px;
+  cursor: pointer;
+  user-select: none;
+  transition: top 0.2s, left 0.2s;
+}
+footer {
+  margin-top: 30px;
+  font-size: 14px;
+  color: #aaa;
+  text-align: center;
+  padding: 10px;
+  background: #2a2a2a;
+}
+</style>
+</head>
+<body>
+<header>♟️ Ayxanın Şahmat Dünyası</header>
+
+<nav>
+  <a href="#home">Ana Səhifə</a>
+  <a href="#rules">Qaydalar</a>
+  <a href="#history">Tarixçə</a>
+  <a href="#contact">Əlaqə</a>
+</nav>
+
+<section id="home">
+  <h2>Xoş gəlmisiniz!</h2>
+  <p>İndi fiqurlar **sadə qaydalarla** lövhədə hərəkət edə bilər.</p>
+  <div class="chessboard" id="board"></div>
+</section>
+
+<footer>© 2025 Ayxanın Şahmat Saytı</footer>
+
+<script>
+// Lövhəni yarat
+const board = document.getElementById('board');
+for (let i=0;i<8;i++){
+  for (let j=0;j<8;j++){
+    const cell = document.createElement('div');
+    cell.className = (i+j)%2===0?'white':'black';
+    board.appendChild(cell);
+  }
+}
+
+// Fiqurların başlanğıc mövqeyi
+let pieces = [
+  {symbol:'♜',x:0,y:0,team:'b'}, {symbol:'♞',x:1,y:0,team:'b'}, {symbol:'♝',x:2,y:0,team:'b'},
+  {symbol:'♛',x:3,y:0,team:'b'}, {symbol:'♚',x:4,y:0,team:'b'}, {symbol:'♝',x:5,y:0,team:'b'},
+  {symbol:'♞',x:6,y:0,team:'b'}, {symbol:'♜',x:7,y:0,team:'b'},
+  {symbol:'♟',x:0,y:1,team:'b'}, {symbol:'♟',x:1,y:1,team:'b'}, {symbol:'♟',x:2,y:1,team:'b'}, 
+  {symbol:'♟',x:3,y:1,team:'b'}, {symbol:'♟',x:4,y:1,team:'b'}, {symbol:'♟',x:5,y:1,team:'b'}, 
+  {symbol:'♟',x:6,y:1,team:'b'}, {symbol:'♟',x:7,y:1,team:'b'},
+  {symbol:'♖',x:0,y:7,team:'w'}, {symbol:'♘',x:1,y:7,team:'w'}, {symbol:'♗',x:2,y:7,team:'w'},
+  {symbol:'♕',x:3,y:7,team:'w'}, {symbol:'♔',x:4,y:7,team:'w'}, {symbol:'♗',x:5,y:7,team:'w'},
+  {symbol:'♘',x:6,y:7,team:'w'}, {symbol:'♖',x:7,y:7,team:'w'},
+  {symbol:'♙',x:0,y:6,team:'w'}, {symbol:'♙',x:1,y:6,team:'w'}, {symbol:'♙',x:2,y:6,team:'w'},
+  {symbol:'♙',x:3,y:6,team:'w'}, {symbol:'♙',x:4,y:6,team:'w'}, {symbol:'♙',x:5,y:6,team:'w'},
+  {symbol:'♙',x:6,y:6,team:'w'}, {symbol:'♙',x:7,y:6,team:'w'}
+];
+
+// Fiqurları lövhəyə əlavə et
+pieces.forEach(p=>{
+  const el = document.createElement('div');
+  el.className='piece';
+  el.innerText = p.symbol;
+  el.style.top = p.y*60 + 'px';
+  el.style.left = p.x*60 + 'px';
+  board.appendChild(el);
+  p.element = el;
+});
+
+// Sadə kliklə hərəkət (piyada bir addım)
+let selected = null;
+board.addEventListener('click', e=>{
+  if(!e.target.classList.contains('piece')) return;
+  const p = pieces.find(pi=>pi.element===e.target);
+  if(selected && selected!==p){
+    // sadə qayda: eyni komandada olmamalıdır
+    if(selected.team !== p.team){
+      // düşməni al
+      p.element.remove();
+      p.x = selected.x;
+      p.y = selected.y;
+      selected.element.style.left = p.x*60+'px';
+      selected.element.style.top = p.y*60+'px';
+      selected=null;
+    }
+  } else {
+    selected = p;
+    alert(p.symbol + ' seçildi. İndi taxtada kliklə yerini dəyişə bilərsən.');
+  }
+});
+</script>
+</body>
+</html>
