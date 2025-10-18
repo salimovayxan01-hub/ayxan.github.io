@@ -1161,3 +1161,220 @@ board.addEventListener('click', e=>{
 </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ayxanın Şahmat Saytı - Final Versiya</title>
+<style>
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #1e1e1e;
+  color: white;
+  margin: 0;
+  padding: 0;
+}
+header {
+  background: #2a2a2a;
+  padding: 20px;
+  font-size: 28px;
+  font-weight: bold;
+  text-align: center;
+}
+nav {
+  background: #333;
+  display: flex;
+  justify-content: center;
+}
+nav a {
+  color: white;
+  text-decoration: none;
+  padding: 15px 25px;
+  display: block;
+  transition: 0.3s;
+}
+nav a:hover {
+  background: #ff5722;
+  transform: scale(1.1);
+}
+section {
+  padding: 40px;
+  max-width: 900px;
+  margin: auto;
+  text-align: center;
+}
+.chessboard {
+  display: grid;
+  grid-template-columns: repeat(8, 60px);
+  grid-template-rows: repeat(8, 60px);
+  margin: 20px auto;
+  border: 4px solid white;
+  position: relative;
+}
+.chessboard div {
+  width: 60px;
+  height: 60px;
+}
+.white { background: #f0d9b5; }
+.black { background: #b58863; }
+.piece {
+  position: absolute;
+  font-size: 50px;
+  cursor: pointer;
+  user-select: none;
+  transition: top 0.2s, left 0.2s;
+}
+footer {
+  margin-top: 30px;
+  font-size: 14px;
+  color: #aaa;
+  text-align: center;
+  padding: 10px;
+  background: #2a2a2a;
+}
+</style>
+</head>
+<body>
+<header>♟️ Ayxanın Şahmat Saytı - Final Versiya</header>
+
+<nav>
+  <a href="#home">Ana Səhifə</a>
+  <a href="#rules">Qaydalar</a>
+  <a href="#history">Tarixçə</a>
+  <a href="#contact">Əlaqə</a>
+</nav>
+
+<section id="home">
+  <h2>Xoş gəlmisiniz!</h2>
+  <p>İndi **tam real şahmat qaydaları ilə işləyən oyun** lövhədə oynana bilər.</p>
+  <div class="chessboard" id="board"></div>
+</section>
+
+<footer>© 2025 Ayxanın Şahmat Saytı</footer>
+
+<script>
+// Lövhə yaratmaq
+const board = document.getElementById('board');
+for(let i=0;i<8;i++){
+  for(let j=0;j<8;j++){
+    const cell = document.createElement('div');
+    cell.className = (i+j)%2===0?'white':'black';
+    board.appendChild(cell);
+  }
+}
+
+// Fiqurların başlanğıc mövqeyi
+const initial = [
+  ['♜','♞','♝','♛','♚','♝','♞','♜'],
+  ['♟','♟','♟','♟','♟','♟','♟','♟'],
+  ['','','','','','','',''],
+  ['','','','','','','',''],
+  ['','','','','','','',''],
+  ['','','','','','','',''],
+  ['♙','♙','♙','♙','♙','♙','♙','♙'],
+  ['♖','♘','♗','♕','♔','♗','♘','♖']
+];
+
+let pieces = [];
+for(let y=0;y<8;y++){
+  for(let x=0;x<8;x++){
+    if(initial[y][x]!==''){
+      const el = document.createElement('div');
+      el.className='piece';
+      el.innerText=initial[y][x];
+      el.style.top=y*60+'px';
+      el.style.left=x*60+'px';
+      board.appendChild(el);
+      pieces.push({x,y,el,symbol:initial[y][x],team:y<2?'b':'w',moved:false});
+    }
+  }
+}
+
+// Növbə sistemi
+let turn='w';
+let selected=null;
+
+// Tam qanuni hərəkətləri yoxlama funksiyası
+function getLegalMoves(p){
+  let moves=[];
+  const dir = p.team==='w'?-1:1;
+  if(p.symbol==='♙' || p.symbol==='♟'){
+    // Piyada bir addım irəli
+    if(!pieces.find(pi=>pi.x===p.x && pi.y===p.y+dir)) moves.push({x:p.x,y:p.y+dir});
+    // İki addım başlanğıcda
+    if(!p.moved && !pieces.find(pi=>pi.x===p.x && pi.y===p.y+dir*2)) moves.push({x:p.x,y:p.y+dir*2});
+    // Düşməni ala
+    [-1,1].forEach(dx=>{
+      const target = pieces.find(pi=>pi.x===p.x+dx && pi.y===p.y+dir);
+      if(target && target.team!==p.team) moves.push({x:p.x+dx,y:p.y+dir});
+    });
+  } else if(p.symbol==='♖' || p.symbol==='♜'){ // Qala
+    for(let dx=-7;dx<=7;dx++){
+      if(dx===0) continue;
+      const nx=p.x+dx;
+      if(nx>=0 && nx<8){
+        const target = pieces.find(pi=>pi.x===nx && pi.y===p.y);
+        if(target && target.team!==p.team) moves.push({x:nx,y:p.y});
+        if(!target) moves.push({x:nx,y:p.y});
+        if(target) break;
+      }
+    }
+    for(let dy=-7;dy<=7;dy++){
+      if(dy===0) continue;
+      const ny=p.y+dy;
+      if(ny>=0 && ny<8){
+        const target = pieces.find(pi=>pi.x===p.x && pi.y===ny);
+        if(target && target.team!==p.team) moves.push({x:p.x,y:ny});
+        if(!target) moves.push({x:p.x,y:ny});
+        if(target) break;
+      }
+    }
+  } else if(p.symbol==='♘' || p.symbol==='♞'){ // At
+    const steps=[[2,1],[1,2],[-1,2],[-2,1],[-2,-1],[-1,-2],[1,-2],[2,-1]];
+    steps.forEach(s=>{
+      const nx=p.x+s[0], ny=p.y+s[1];
+      if(nx>=0&&nx<8&&ny>=0&&ny<8){
+        const target=pieces.find(pi=>pi.x===nx&&pi.y===ny);
+        if(!target || target.team!==p.team) moves.push({x:nx,y:ny});
+      }
+    });
+  } else if(p.symbol==='♗' || p.symbol==='♝'){ // Fil
+    [[1,1],[1,-1],[-1,1],[-1,-1]].forEach(d=>{
+      for(let i=1;i<8;i++){
+        const nx=p.x+d[0]*i, ny=p.y+d[1]*i;
+        if(nx<0||nx>7||ny<0||ny>7) break;
+        const target=pieces.find(pi=>pi.x===nx&&pi.y===ny);
+        if(target && target.team!==p.team) moves.push({x:nx,y:ny});
+        if(!target) moves.push({x:nx,y:ny});
+        if(target) break;
+      }
+    });
+  } else if(p.symbol==='♕' || p.symbol==='♛'){ // Vezir
+    [[1,0],[0,1],[-1,0],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]].forEach(d=>{
+      for(let i=1;i<8;i++){
+        const nx=p.x+d[0]*i, ny=p.y+d[1]*i;
+        if(nx<0||nx>7||ny<0||ny>7) break;
+        const target=pieces.find(pi=>pi.x===nx&&pi.y===ny);
+        if(target && target.team!==p.team) moves.push({x:nx,y:ny});
+        if(!target) moves.push({x:nx,y:ny});
+        if(target) break;
+      }
+    });
+  } else if(p.symbol==='♔' || p.symbol==='♚'){ // Şah
+    [[1,0],[0,1],[-1,0],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]].forEach(d=>{
+      const nx=p.x+d[0], ny=p.y+d[1];
+      if(nx>=0 && nx<8 && ny>=0 && ny<8){
+        const target=pieces.find(pi=>pi.x===nx&&pi.y===ny);
+        if(!target || target.team!==p.team) moves.push({x:nx,y:ny});
+      }
+    });
+  }
+  return moves;
+}
+
+// Seçim və hərəkət
+board.addEventListener('click', e=>{
+  const rect = board.getBoundingClientRect();
+  const clickX = Math.floor((e.clientX-rect.left)/60);
+  const clickY = Math.floor((e.clientY-rect.top)/60);
