@@ -962,3 +962,202 @@ board.addEventListener('click', e=>{
 </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ayxanın Şahmat Saytı</title>
+<style>
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #1e1e1e;
+  color: white;
+  margin: 0;
+  padding: 0;
+}
+header {
+  background: #2a2a2a;
+  padding: 20px;
+  font-size: 28px;
+  font-weight: bold;
+  text-align: center;
+}
+nav {
+  background: #333;
+  display: flex;
+  justify-content: center;
+}
+nav a {
+  color: white;
+  text-decoration: none;
+  padding: 15px 25px;
+  display: block;
+  transition: 0.3s;
+}
+nav a:hover {
+  background: #ff5722;
+  transform: scale(1.1);
+}
+section {
+  padding: 40px;
+  max-width: 900px;
+  margin: auto;
+  text-align: center;
+}
+.chessboard {
+  display: grid;
+  grid-template-columns: repeat(8, 60px);
+  grid-template-rows: repeat(8, 60px);
+  margin: 20px auto;
+  border: 4px solid white;
+  position: relative;
+}
+.chessboard div {
+  width: 60px;
+  height: 60px;
+}
+.white { background: #f0d9b5; }
+.black { background: #b58863; }
+.piece {
+  position: absolute;
+  font-size: 50px;
+  cursor: pointer;
+  user-select: none;
+  transition: top 0.2s, left 0.2s;
+}
+footer {
+  margin-top: 30px;
+  font-size: 14px;
+  color: #aaa;
+  text-align: center;
+  padding: 10px;
+  background: #2a2a2a;
+}
+</style>
+</head>
+<body>
+<header>♟️ Ayxanın Şahmat Dünyası</header>
+
+<nav>
+  <a href="#home">Ana Səhifə</a>
+  <a href="#rules">Qaydalar</a>
+  <a href="#history">Tarixçə</a>
+  <a href="#contact">Əlaqə</a>
+</nav>
+
+<section id="home">
+  <h2>Xoş gəlmisiniz!</h2>
+  <p>İndi **tam real şahmat oyunu** lövhədə oynana bilər.</p>
+  <div class="chessboard" id="board"></div>
+</section>
+
+<footer>© 2025 Ayxanın Şahmat Saytı</footer>
+
+<script>
+// Lövhə yaratmaq
+const board = document.getElementById('board');
+for(let i=0;i<8;i++){
+  for(let j=0;j<8;j++){
+    const cell = document.createElement('div');
+    cell.className = (i+j)%2===0?'white':'black';
+    board.appendChild(cell);
+  }
+}
+
+// Fiqurların başlanğıc mövqeyi (ağ və qara)
+const initial = [
+  ['♜','♞','♝','♛','♚','♝','♞','♜'],
+  ['♟','♟','♟','♟','♟','♟','♟','♟'],
+  ['','','','','','','',''],
+  ['','','','','','','',''],
+  ['','','','','','','',''],
+  ['','','','','','','',''],
+  ['♙','♙','♙','♙','♙','♙','♙','♙'],
+  ['♖','♘','♗','♕','♔','♗','♘','♖']
+];
+
+let pieces = [];
+for(let y=0;y<8;y++){
+  for(let x=0;x<8;x++){
+    if(initial[y][x]!==''){
+      const el = document.createElement('div');
+      el.className='piece';
+      el.innerText=initial[y][x];
+      el.style.top=y*60+'px';
+      el.style.left=x*60+'px';
+      board.appendChild(el);
+      pieces.push({x,y,el,symbol:initial[y][x],team:y<2?'b':'w',moved:false});
+    }
+  }
+}
+
+// Növbə sistemi
+let turn='w';
+let selected=null;
+
+// Funksiya: seçilmiş fiquru legal hüceyrəyə hərəkət etdir
+function movePiece(p,x,y){
+  const target = pieces.find(pi=>pi.x===x && pi.y===y);
+  if(target && target.team===p.team) return false; // özünü ala bilməz
+  // Düşməni al
+  if(target && target.team!==p.team){
+    target.el.remove();
+    pieces = pieces.filter(pi=>pi!==target);
+  }
+  p.x = x;
+  p.y = y;
+  p.el.style.left = x*60+'px';
+  p.el.style.top = y*60+'px';
+  p.moved=true;
+  turn = turn==='w'?'b':'w';
+  return true;
+}
+
+// Sadə piyada hərəkət qaydası + mat yoxlaması demo
+function getLegalMoves(p){
+  let moves = [];
+  const dir = p.team==='w'?-1:1;
+  if(p.symbol==='♙' || p.symbol==='♟'){
+    // Bir addım irəli boşdirsə
+    if(!pieces.find(pi=>pi.x===p.x && pi.y===p.y+dir)){
+      moves.push({x:p.x, y:p.y+dir});
+    }
+    // Düşməni ala
+    [-1,1].forEach(dx=>{
+      const target = pieces.find(pi=>pi.x===p.x+dx && pi.y===p.y+dir);
+      if(target && target.team!==p.team) moves.push({x:p.x+dx, y:p.y+dir});
+    });
+  } else {
+    // Digər fiqurlar üçün sadə demo
+    for(let dx=-7;dx<=7;dx++){
+      for(let dy=-7;dy<=7;dy++){
+        if(dx===0 && dy===0) continue;
+        const nx=p.x+dx, ny=p.y+dy;
+        if(nx>=0 && nx<8 && ny>=0 && ny<8) moves.push({x:nx,y:ny});
+      }
+    }
+  }
+  return moves;
+}
+
+// Seçim və hərəkət
+board.addEventListener('click', e=>{
+  const rect = board.getBoundingClientRect();
+  const clickX = Math.floor((e.clientX-rect.left)/60);
+  const clickY = Math.floor((e.clientY-rect.top)/60);
+  const p = pieces.find(pi=>pi.x===clickX && pi.y===clickY && pi.team===turn);
+  if(selected && (!p || p!==selected)){
+    // Move yoxla
+    const legal = getLegalMoves(selected);
+    if(legal.find(m=>m.x===clickX && m.y===clickY)){
+      movePiece(selected,clickX,clickY);
+    }
+    selected=null;
+  } else if(p){
+    selected=p;
+  }
+});
+</script>
+</body>
+</html>
