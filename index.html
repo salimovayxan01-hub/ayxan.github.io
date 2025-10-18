@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ayxanın Şahmat Saytı</title>
+<style>
+body { font-family: Arial; background:#1e1e1e; color:white; text-align:center; margin:0; padding:0; }
+header { font-size:28px; padding:20px; background:#2a2a2a; }
+.chessboard { display:grid; grid-template-columns:repeat(8,60px); grid-template-rows:repeat(8,60px); margin:20px auto; }
+.chessboard div { width:60px; height:60px; }
+.white { background:#f0d9b5; }
+.black { background:#b58863; }
+</style>
+</head>
+<body>
+<header>♟️ Ayxanın Şahmat Dünyası</header>
+<div class="chessboard"></div>
+<script>
+const board=document.querySelector('.chessboard');
+for(let i=0;i<8;i++){for(let j=0;j<8;j++){
+const cell=document.createElement('div');
+cell.className=(i+j)%2===0?'white':'black';
+board.appendChild(cell);
+}}
+</script>
+</body>
+</html>
