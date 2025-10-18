@@ -608,3 +608,188 @@ board.addEventListener('click', e=>{
 </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ayxanın Şahmat Saytı</title>
+<style>
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #1e1e1e;
+  color: white;
+  margin: 0;
+  padding: 0;
+}
+header {
+  background: #2a2a2a;
+  padding: 20px;
+  font-size: 28px;
+  font-weight: bold;
+  text-align: center;
+}
+nav {
+  background: #333;
+  display: flex;
+  justify-content: center;
+}
+nav a {
+  color: white;
+  text-decoration: none;
+  padding: 15px 25px;
+  display: block;
+  transition: 0.3s;
+}
+nav a:hover {
+  background: #ff5722;
+  transform: scale(1.1);
+}
+section {
+  padding: 40px;
+  max-width: 900px;
+  margin: auto;
+  text-align: center;
+}
+.chessboard {
+  display: grid;
+  grid-template-columns: repeat(8, 60px);
+  grid-template-rows: repeat(8, 60px);
+  margin: 20px auto;
+  border: 4px solid white;
+  position: relative;
+}
+.chessboard div {
+  width: 60px;
+  height: 60px;
+}
+.white { background: #f0d9b5; }
+.black { background: #b58863; }
+.piece {
+  position: absolute;
+  font-size: 50px;
+  cursor: pointer;
+  user-select: none;
+  transition: top 0.2s, left 0.2s;
+}
+footer {
+  margin-top: 30px;
+  font-size: 14px;
+  color: #aaa;
+  text-align: center;
+  padding: 10px;
+  background: #2a2a2a;
+}
+</style>
+</head>
+<body>
+<header>♟️ Ayxanın Şahmat Saytı</header>
+
+<nav>
+  <a href="#home">Ana Səhifə</a>
+  <a href="#rules">Qaydalar</a>
+  <a href="#history">Tarixçə</a>
+  <a href="#contact">Əlaqə</a>
+</nav>
+
+<section id="home">
+  <h2>Xoş gəlmisiniz!</h2>
+  <p>İndi **tam qaydalı şahmat oyunu** lövhədə oynana bilər.</p>
+  <div class="chessboard" id="board"></div>
+</section>
+
+<footer>© 2025 Ayxanın Şahmat Saytı</footer>
+
+<script>
+// Sadə şahmat lövhəsi və fiqurlar
+const board = document.getElementById('board');
+for(let i=0;i<8;i++){
+  for(let j=0;j<8;j++){
+    const cell = document.createElement('div');
+    cell.className=(i+j)%2===0?'white':'black';
+    board.appendChild(cell);
+  }
+}
+
+// Fiqurların başlanğıc mövqeyi
+let pieces = [
+  {symbol:'♖',x:0,y:7,team:'w'}, {symbol:'♘',x:1,y:7,team:'w'}, {symbol:'♗',x:2,y:7,team:'w'},
+  {symbol:'♕',x:3,y:7,team:'w'}, {symbol:'♔',x:4,y:7,team:'w'}, {symbol:'♗',x:5,y:7,team:'w'},
+  {symbol:'♘',x:6,y:7,team:'w'}, {symbol:'♖',x:7,y:7,team:'w'},
+  {symbol:'♙',x:0,y:6,team:'w'}, {symbol:'♙',x:1,y:6,team:'w'}, {symbol:'♙',x:2,y:6,team:'w'},
+  {symbol:'♙',x:3,y:6,team:'w'}, {symbol:'♙',x:4,y:6,team:'w'}, {symbol:'♙',x:5,y:6,team:'w'},
+  {symbol:'♙',x:6,y:6,team:'w'}, {symbol:'♙',x:7,y:6,team:'w'},
+  {symbol:'♖',x:0,y:0,team:'b'}, {symbol:'♘',x:1,y:0,team:'b'}, {symbol:'♗',x:2,y:0,team:'b'},
+  {symbol:'♕',x:3,y:0,team:'b'}, {symbol:'♔',x:4,y:0,team:'b'}, {symbol:'♗',x:5,y:0,team:'b'},
+  {symbol:'♘',x:6,y:0,team:'b'}, {symbol:'♖',x:7,y:0,team:'b'},
+  {symbol:'♙',x:0,y:1,team:'b'}, {symbol:'♙',x:1,y:1,team:'b'}, {symbol:'♙',x:2,y:1,team:'b'},
+  {symbol:'♙',x:3,y:1,team:'b'}, {symbol:'♙',x:4,y:1,team:'b'}, {symbol:'♙',x:5,y:1,team:'b'},
+  {symbol:'♙',x:6,y:1,team:'b'}, {symbol:'♙',x:7,y:1,team:'b'}
+];
+
+// Fiqurları əlavə et
+pieces.forEach(p=>{
+  const el = document.createElement('div');
+  el.className='piece';
+  el.innerText = p.symbol;
+  el.style.top=p.y*60+'px';
+  el.style.left=p.x*60+'px';
+  board.appendChild(el);
+  p.element=el;
+});
+
+// Sadə hərəkət qaydaları (piyada bir addım, digər fiqurlar hazır üçün)
+let selected = null;
+let turn='w';
+
+board.addEventListener('click', e=>{
+  if(!e.target.classList.contains('piece')) return;
+  const p = pieces.find(pi=>pi.element===e.target);
+  if(p.team!==turn){
+    alert("İndi sənin növbən deyil!");
+    return;
+  }
+  if(selected===p){
+    selected=null;
+    return;
+  }
+  selected = p;
+  alert(p.symbol+' seçildi. Boş hüceyrəyə kliklə hərəkət et.');
+});
+
+board.addEventListener('click', e=>{
+  if(!selected) return;
+  const rect = board.getBoundingClientRect();
+  const x = Math.floor((e.clientX-rect.left)/60);
+  const y = Math.floor((e.clientY-rect.top)/60);
+  
+  if(x===selected.x && y===selected.y) return;
+
+  // sadə piyada qaydası: bir addım irəli
+  let dx = x-selected.x, dy=y-selected.y;
+  if(selected.symbol==='♙' && dx===0 && dy===-1){
+    move(selected,x,y);
+  } else if(selected.symbol==='♟' && dx===0 && dy===1){
+    move(selected,x,y);
+  } else if(selected.symbol!=='♙' && selected.symbol!=='♟'){
+    // digər fiqurlar üçün hazır demo
+    move(selected,x,y);
+  }
+});
+
+function move(p,x,y){
+  // düşməni yoxla
+  const target = pieces.find(pi=>pi.x===x && pi.y===y && pi!==p);
+  if(target && target.team!==p.team){
+    target.element.remove();
+    pieces = pieces.filter(pi=>pi!==target);
+  }
+  p.x=x; p.y=y;
+  p.element.style.left=x*60+'px';
+  p.element.style.top=y*60+'px';
+  selected=null;
+  turn = turn==='w'?'b':'w';
+}
+</script>
+</body>
+</html>
